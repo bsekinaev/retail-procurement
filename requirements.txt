@@ -1,0 +1,12 @@
+Django
+djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary
+celery
+redis
+drf-spectacular
+PyYAML
+pytest
+pytest-django
+factory-boy
+Pillow
