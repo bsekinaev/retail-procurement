@@ -27,13 +27,14 @@ INSTALLED_APPS = [
     # сторонние
     'rest_framework',
     'rest_framework_simplejwt',
-    'drf_spectacular',
+    #'drf_spectacular',
     # наши приложения,
     'users',
     'products',
     'cart',
     'orders_app',
     'suppliers',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -111,6 +112,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@retail-procurement.ru'
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -134,9 +141,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': 'drf_spectacular.openapi.AutoSchema',
-
+    )
 }
 
 # Spectacular
