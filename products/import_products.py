@@ -29,56 +29,60 @@ def import_products_from_yaml(file_path=None, content=None):
         raise ValueError('Необходимо указать file_path или content')
 
         # Если данные не список, оборачиваем в список
-    if isinstance(data, dict):
-        data = [data]
-    elif not isinstance(data, list):
-        raise ValueError('Ожидается список магазинов или объект магазина')
+    if isinstance(data, list):
+        data = data[0] if data else {}
+    elif not isinstance(data, dict):
+        raise ValueError('Ожидается объект магазина')
 
     with transaction.atomic():
-        for shop_data in data:
-            supplier_name = shop_data.get('shop')
-            if not supplier_name:
+        supplier_name = data.get('shop')
+        if not supplier_name:
+            raise ValueError('Не указано название магазина (shop)')
+
+        supplier, _ = Supplier.objects.get_or_create(
+            company_name=supplier_name,
+            defaults={'user': None}
+        )
+
+        # Сохраняем категории с их id для сопоставления
+        categories_by_id = {}
+        for cat in data.get('categories', []):
+            cat_id = cat.get('id')
+            cat_name = cat.get('name')
+            if cat_id and cat_name:
+                category, _ = Category.objects.get_or_create(name=cat_name)
+                categories_by_id[cat_id] = category
+
+        # Импорт товаров из списка goods
+        goods = data.get('goods', [])
+        for item in goods:
+            product_name = item.get('model')
+            if not product_name:
                 continue
 
-            supplier, created = Supplier.objects.get_or_create(
-                company_name=supplier_name,
-                defaults={'user': None}
+            cat_id = item.get('category')
+            category = categories_by_id.get(cat_id)
+
+            product, created = Product.objects.update_or_create(
+                name=product_name,
+                supplier=supplier,
+                defaults={
+                    'category': category,
+                    'description': item.get('description', ''),
+                    'price': item.get('price', 0),
+                    'quantity': item.get('quantity', 0),
+                    'is_available': True,
+                }
             )
 
-            categories_data = shop_data.get('categories', [])
-            for cat_data in categories_data:
-                cat_name = cat_data.get('name')
-                if not cat_name:
-                    continue
+            if not created:
+                product.characteristics.all().delete()
 
-                category, _ = Category.objects.get_or_create(name=cat_name)
-
-                products_data = cat_data.get('products', [])
-                for prod_data in products_data:
-                    product_name = prod_data.get('name')
-                    if not product_name:
-                        continue
-
-                    product, product_created = Product.objects.update_or_create(
-                        name=product_name,
-                        supplier=supplier,
-                        defaults={
-                            'category': category,
-                            'description': prod_data.get('description', ''),
-                            'price': prod_data.get('price', 0),
-                            'quantity': prod_data.get('quantity', 0),
-                            'is_available': True,
-                        }
-                    )
-
-                    if not product_created:
-                        product.characteristics.all().delete()
-
-                    params = prod_data.get('parameters', {})
-                    for key, value in params.items():
-                        ProductCharacteristic.objects.create(
-                            product=product,
-                            name=key,
-                            value=str(value)
-                        )
+            params = item.get('parameters', {})
+            for key, value in params.items():
+                ProductCharacteristic.objects.create(
+                    product=product,
+                    name=key,
+                    value=str(value)
+                )
     return True

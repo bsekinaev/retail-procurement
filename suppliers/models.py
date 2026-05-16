@@ -18,5 +18,5 @@ class Supplier(models.Model):
         verbose_name = 'Поставщик'
         verbose_name_plural = verbose_name
 
-        def __str__(self):
-            return self.company_name
+    def __str__(self):
+        return self.company_name
