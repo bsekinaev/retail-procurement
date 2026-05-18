@@ -3,6 +3,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import auth_views
 from products.views import ProductListView, ProductDetailView
 from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDeleteView
+from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
 
 urlpatterns = [
     # Авторизация
@@ -19,4 +20,9 @@ urlpatterns = [
     path('cart/items/', CartItemAddView.as_view(), name='cart-item-add'),
     path('cart/items/<int:pk>/', CartItemUpdateView.as_view(), name='cart-item-update'),
     path('cart/items/<int:pk>/delete/', CartItemDeleteView.as_view(), name='cart-item-delete'),
+
+    # Заказы
+    path('orders/', OrderListView.as_view(), name='order-list'),
+    path('orders/confirm/', OrderConfirmView.as_view(), name='order-confirm'),
+    path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
 ]
