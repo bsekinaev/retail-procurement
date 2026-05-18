@@ -9,7 +9,8 @@ class Supplier(models.Model):
         related_name='supplier_profile',
         null=True,
         blank=True,
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
+        db_index=True,
     )
     company_name = models.CharField(max_length=200, verbose_name='Название компании')
     is_active = models.BooleanField(default=True, verbose_name='Принимает заказы')

@@ -34,13 +34,15 @@ class Order(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='orders',
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
+        db_index=True,
     )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.NEW,
-        verbose_name='Статус'
+        verbose_name='Статус',
+        db_index=True,
     )
     contact = models.ForeignKey(
         Contact,

@@ -29,12 +29,14 @@ class CartItem(models.Model):
         Cart,
         on_delete=models.CASCADE,
         related_name='items',
-        verbose_name='Корзина'
+        verbose_name='Корзина',
+        db_index=True,
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        verbose_name='Товар'
+        verbose_name='Товар',
+        db_index=True,
     )
     quantity =  models.PositiveIntegerField(default=1, verbose_name='Количество')
 

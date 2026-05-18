@@ -19,7 +19,8 @@ class Product(models.Model):
         Category,
         on_delete=models.CASCADE,
         related_name='products',
-        verbose_name='Категория'
+        verbose_name='Категория',
+        db_index=True,
     )
     supplier = models.ForeignKey(
         'suppliers.Supplier',
@@ -27,9 +28,9 @@ class Product(models.Model):
         related_name='products',
         verbose_name='Поставщик'
     )
-    name = models.CharField(max_length=200, verbose_name='Название')
+    name = models.CharField(max_length=200, verbose_name='Название',db_index=True)
     description = models.TextField(blank=True, verbose_name='Описание')
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена',db_index=True)
     quantity = models.PositiveIntegerField(default=0, verbose_name='Количество на складе')
     is_available = models.BooleanField(default=True, verbose_name='Доступен для заказа')
     created_at = models.DateTimeField(auto_now_add=True)
