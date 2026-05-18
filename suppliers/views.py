@@ -1,17 +1,16 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from orders_app.models import Order
 from .models import Supplier
 from orders_app.serializers import OrderSerializer
 from products.tasks import do_import
-
+from api.permissions import IsSupplier, IsAdmin
 
 class SupplierOrdersView(generics.ListAPIView):
     # Заказы, содержащие товары данного поставщика
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSupplier]
 
     def get_queryset(self):
         supplier = Supplier.objects.filter(user=self.request.user).first()
@@ -22,26 +21,26 @@ class SupplierOrdersView(generics.ListAPIView):
 
 class SupplierStatusView(APIView):
     # Включение/отключение приема заказов поставщиком
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSupplier]
 
-    def put(self,request):
+    def put(self, request):
         supplier = Supplier.objects.filter(user=self.request.user).first()
         if not supplier:
-            return Response({'Ошибка':'Вы не являетесь поставщиком'}, status=403)
+            return Response({'Ошибка': 'Вы не являетесь поставщиком'}, status=403)
         is_active = request.data.get('is_active', True)
         supplier.is_active = is_active
         supplier.save()
-        return Response({'status':'ok','is_active':supplier.is_active})
+        return Response({'status': 'ok', 'is_active': supplier.is_active})
 
 
 class SupplierImportView(APIView):
     # Запуск импорта товаров через Celery
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
-    def post(self,request):
+    def post(self, request):
         file_path = request.data.get('file_path')
         content = request.data.get('content')
         if not file_path and not content:
-            return Response({'Ошибка':'Укажите file_path или content'}, status=400)
-        task = do_import.delay(file_path=file_path,content=content)
+            return Response({'Ошибка': 'Укажите file_path или content'}, status=400)
+        task = do_import.delay(file_path=file_path, content=content)
         return Response({'task_id': task.task_id}, status=202)

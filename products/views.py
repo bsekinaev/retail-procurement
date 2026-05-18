@@ -10,13 +10,17 @@ class ProductListView(generics.ListAPIView):
 
     # Фильтрация и поиск
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name','description']
-    ordering_fields = ['price','name','created_at']
+    search_fields = ['name', 'description']
+    ordering_fields = ['price', 'name', 'created_at']
     ordering = ['name']
 
     # Допольнительная фильтрация
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(
+            is_available=True,
+            supplier__is_active=True
+        )
+        # Применяем дополнительные фильтры из запроса
         category = self.request.query_params.get('category')
         supplier = self.request.query_params.get('supplier')
         min_price = self.request.query_params.get('min_price')
@@ -30,7 +34,6 @@ class ProductListView(generics.ListAPIView):
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
-
         return queryset
 
 class ProductDetailView(generics.RetrieveAPIView):

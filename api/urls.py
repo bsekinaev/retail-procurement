@@ -31,4 +31,7 @@ urlpatterns = [
     path('supplier/orders/', SupplierOrdersView.as_view(), name='supplier-orders'),
     path('supplier/status/', SupplierStatusView.as_view(), name='supplier-status'),
     path('supplier/import/', SupplierImportView.as_view(), name='supplier-import'),
+
+    # Подтверждение email
+    path('auth/verify-email/', auth_views.verify_email, name='verify-email'),
 ]

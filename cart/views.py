@@ -24,6 +24,8 @@ class CartItemAddView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         product_id = request.data.get('product_id')
         quantity = int(request.data.get('quantity', 1))
+        if quantity < 1:
+            return Response({'Ошибка': 'Количество должно быть положительным'}, status=status.HTTP_400_BAD_REQUEST)
         product = get_object_or_404(Product, id=product_id, is_available=True)
 
         cart, _ = Cart.objects.get_or_create(user=request.user)

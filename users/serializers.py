@@ -20,6 +20,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             user_type=validated_data.get('user_type', User.UserType.CLIENT),
+            is_active=False,
             is_verified=False,
             verification_token=uuid.uuid4().hex
         )

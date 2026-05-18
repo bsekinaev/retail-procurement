@@ -1,10 +1,11 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import transaction
+from django.db import transaction, models
 from .models import Order, OrderItem, Contact
-from .serializers import OrderSerializer, OrderConfirmSerializer
+from .serializers import OrderSerializer
 from cart.models import Cart
+from products.models import Product
 
 class OrderListView(generics.ListAPIView):
     serializer_class = OrderSerializer
@@ -20,17 +21,30 @@ class OrderDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).prefetch_related('items')
 
-
 class OrderConfirmView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @transaction.atomic
-    def post(self,request):
+    def post(self, request):
         cart = Cart.objects.filter(user=request.user).prefetch_related('items__product').first()
         if not cart or not cart.items.exists():
             return Response({'Ошибка':'Корзина пуста'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Создаем или используем контакт
+        # Проверка остатков с блокировкой
+        products = {}
+        insufficient = []
+        for item in cart.items.all():
+            product = Product.objects.select_for_update().get(id=item.product.id)
+            if item.quantity > product.quantity:
+                insufficient.append(f'{product.name} (доступно {product.quantity})')
+            else:
+                products[item.product.id] = product
+
+        if insufficient:
+            return Response({'Ошибка': 'Недостаточно товара: ' + ', '.join(insufficient)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Создаём или используем контакт
         contact = None
         contact_id = request.data.get('contact_id')
         if contact_id:
@@ -42,23 +56,24 @@ class OrderConfirmView(APIView):
                 return Response({'Ошибка':'Не указан адрес доставки и/или телефон!'}, status=status.HTTP_400_BAD_REQUEST)
             contact = Contact.objects.create(user=request.user, address=address, phone=phone)
 
-        # Создаем заказ
+        # Создаём заказ
         order = Order.objects.create(user=request.user, contact=contact)
         for item in cart.items.all():
+            product = products[item.product.id]
             OrderItem.objects.create(
                 order=order,
-                product=item.product,
+                product=product,
                 quantity=item.quantity,
-                price=item.product.price,
+                price=product.price,
             )
-            # Уменьшаем остаток товара
-            item.product.quantity = max(0, item.product.quantity - item.quantity)
-            item.product.save()
+            # Атомарное уменьшение остатка
+            product.quantity = models.F('quantity') - item.quantity
+            product.save(update_fields=['quantity'])
 
         # Очищаем корзину
         cart.items.all().delete()
 
-        # Асинхронная отправка email (заглушка)
+        # Асинхронная отправка email
         try:
             from api.tasks import send_order_confirmation
             send_order_confirmation.delay(order.id)
