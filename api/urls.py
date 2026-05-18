@@ -4,6 +4,7 @@ from . import auth_views
 from products.views import ProductListView, ProductDetailView
 from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDeleteView
 from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
+from suppliers.views import SupplierOrdersView, SupplierStatusView, SupplierImportView
 
 urlpatterns = [
     # Авторизация
@@ -25,4 +26,9 @@ urlpatterns = [
     path('orders/', OrderListView.as_view(), name='order-list'),
     path('orders/confirm/', OrderConfirmView.as_view(), name='order-confirm'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
+
+    # Поставщики
+    path('supplier/orders/', SupplierOrdersView.as_view(), name='supplier-orders'),
+    path('supplier/status/', SupplierStatusView.as_view(), name='supplier-status'),
+    path('supplier/import/', SupplierImportView.as_view(), name='supplier-import'),
 ]
