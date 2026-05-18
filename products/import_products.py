@@ -28,7 +28,7 @@ def import_products_from_yaml(file_path=None, content=None):
     else:
         raise ValueError('Необходимо указать file_path или content')
 
-        # Если данные не список, оборачиваем в список
+    # Если данные не список, оборачиваем в список
     if isinstance(data, list):
         data = data[0] if data else {}
     elif not isinstance(data, dict):

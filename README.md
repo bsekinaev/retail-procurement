@@ -182,6 +182,7 @@ retail-procurement/
 ├── products/              # Товары, категории, импорт, Celery-задачи
 ├── suppliers/             # Поставщики, views
 ├── users/                 # Кастомная модель User, сериализатор регистрации
+├── doc/                   # Файлы документации
 ├── celery_worker.py       # Конфигурация Celery
 ├── docker-compose.yml
 ├── Dockerfile
