@@ -8,7 +8,7 @@ class ProductCharacteristicSerializer(serializers.ModelSerializer):
         fields = ('name', 'value')
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductListSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
     supplier = serializers.StringRelatedField()
 

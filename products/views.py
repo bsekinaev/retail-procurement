@@ -1,11 +1,11 @@
 from rest_framework import generics, filters
 from .models import Product
-from .serializers import ProductSerializer,ProductDetailSerializer
+from .serializers import ProductListSerializer,ProductDetailSerializer
 
 
 class ProductListView(generics.ListAPIView):
     # Список товаров с фильтром и поиском
-    serializer_class = ProductSerializer
+    serializer_class = ProductListSerializer
     queryset = Product.objects.filter(is_available=True).select_related('category','supplier')
 
     # Фильтрация и поиск
