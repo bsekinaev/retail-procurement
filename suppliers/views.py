@@ -16,7 +16,7 @@ class SupplierOrdersView(generics.ListAPIView):
     def get_queryset(self):
         supplier = Supplier.objects.filter(user=self.request.user).first()
         if not supplier:
-            return Supplier.objects.none()
+            return Order.objects.none()
         return Order.objects.filter(items__product__supplier=supplier).distinct()
 
 

@@ -32,7 +32,7 @@ class OrderConfirmView(APIView):
 
         # Создаем или используем контакт
         contact = None
-        contact_id = request.data.get('contact')
+        contact_id = request.data.get('contact_id')
         if contact_id:
             contact = Contact.objects.filter(id=contact_id, user=request.user).first()
         if not contact:

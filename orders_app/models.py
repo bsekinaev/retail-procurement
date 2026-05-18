@@ -16,7 +16,7 @@ class Contact(models.Model):
 
     class Meta:
         verbose_name = 'Контакт'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Контакты'
 
     def __str__(self):
         return f'{self.user.email} - {self.address[:50]}'
@@ -50,11 +50,11 @@ class Order(models.Model):
         verbose_name='Контакт доставки'
     )
     created_at = models.DateTimeField(auto_now_add=True,verbose_name='Создан')
-    updated_at = models.DateTimeField(auto_now_add=True, verbose_name='Обновлен')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлен')
 
     class Meta:
         verbose_name = 'Заказ'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Заказы'
         ordering = ['-created_at']
 
 
@@ -83,7 +83,7 @@ class OrderItem(models.Model):
 
     class Meta:
         verbose_name = 'Позиция заказа'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Позиции заказов'
 
     def __str__(self):
         return f'{self.product.name} x{self.quantity}'

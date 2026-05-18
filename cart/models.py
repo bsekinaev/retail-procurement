@@ -14,7 +14,7 @@ class Cart(models.Model):
 
     class Meta:
         verbose_name = 'Корзина'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Корзины'
 
     def __str__(self):
         return f'Корзина пользователя {self.user.email}'
@@ -40,7 +40,7 @@ class CartItem(models.Model):
 
     class Meta:
         verbose_name = 'Позиция корзины'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Позиции корзины'
         unique_together = ('cart', 'product')
 
     def __str__(self):

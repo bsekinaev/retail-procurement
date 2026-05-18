@@ -15,7 +15,7 @@ def send_verification_email(user_id):
         return 'Пользователь не найден'
 
 @shared_task
-def send_verification_email(order_id):
+def send_order_confirmation(order_id):
     from orders_app.models import Order
     try:
         order = Order.objects.get(id=order_id)

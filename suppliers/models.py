@@ -16,7 +16,7 @@ class Supplier(models.Model):
 
     class Meta:
         verbose_name = 'Поставщик'
-        verbose_name_plural = verbose_name
+        verbose_name_plural = 'Поставщики'
 
     def __str__(self):
         return self.company_name
