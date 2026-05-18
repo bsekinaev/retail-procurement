@@ -37,7 +37,7 @@ Backend‑приложение для автоматизации закупок 
 - **Импорт товаров** из YAML‑файла через management‑команду и асинхронную Celery‑задачу
 - **Email‑уведомления** о регистрации и подтверждении заказа (через Celery, backend – консоль)
 - **Полная контейнеризация** Docker Compose (PostgreSQL, Redis, Celery worker, Django)
-- **Документирование API** (в плане подключение Swagger через `drf-spectacular`)
+- **Автоматическая документация API** – Swagger UI и ReDoc через `drf-spectacular`
 
 ---
 
@@ -57,7 +57,7 @@ Backend‑приложение для автоматизации закупок 
 | **Аутентификация** | Simple JWT |
 | **Контейнеризация** | Docker, Docker Compose |
 | **Тестирование** | pytest, factory-boy |
-| **Документация** | drf-spectacular (будет добавлен) |
+| **Документация** | drf-spectacular (Swagger UI, ReDoc) |
 
 ---
 
@@ -96,6 +96,10 @@ docker-compose up --build -d
 ```bash
 docker-compose exec web python manage.py import_products shop1.yaml
 ```
+
+### 5. Документация API
+Swagger UI: [http://localhost:8000/api/v1/docs/](http://localhost:8000/api/v1/docs/)  
+ReDoc: [http://localhost:8000/api/v1/redoc/](http://localhost:8000/api/v1/redoc/)
 
 ---
 
@@ -177,12 +181,12 @@ docker-compose exec web pytest
 retail-procurement/
 ├── api/                   # Основные эндпоинты, Celery-задачи email
 ├── cart/                  # Модель корзины, сериализаторы, views
+├── doc/                   # Документация и схемы (архитектура)
 ├── orders_app/            # Заказы, контакты, сериализаторы, views
 ├── orders/                # Настройки Django
 ├── products/              # Товары, категории, импорт, Celery-задачи
 ├── suppliers/             # Поставщики, views
 ├── users/                 # Кастомная модель User, сериализатор регистрации
-├── doc/                   # Файлы документации
 ├── celery_worker.py       # Конфигурация Celery
 ├── docker-compose.yml
 ├── Dockerfile
@@ -197,7 +201,7 @@ retail-procurement/
 
 ## 🚧 Дальнейшее развитие
 
-- [ ] Подключить Swagger‑документацию (`drf-spectacular`)
+- [x] Подключить Swagger‑документацию (`drf-spectacular`)
 - [ ] Добавить эндпоинт подтверждения email (верификация)
 - [ ] Админский эндпоинт смены статуса заказа с уведомлением клиента
 - [ ] Экспорт товаров в CSV/YAML
@@ -215,3 +219,5 @@ Python Backend Developer
 - 📧 [bsekinaev@ya.ru](bsekinaev@ya.ru)
 - 📢 Telegram: [@bsekinaev](https://t.me/bsekinaev)  
 - ⭐️ GitHub: [bsekinaev](https://github.com/bsekinaev)
+
+
