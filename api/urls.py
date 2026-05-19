@@ -5,6 +5,7 @@ from products.views import ProductListView, ProductDetailView
 from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDeleteView
 from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
 from suppliers.views import SupplierOrdersView, SupplierStatusView, SupplierImportView
+from api.admin_views import change_order_status, export_products_csv
 
 urlpatterns = [
     # Авторизация
@@ -34,4 +35,8 @@ urlpatterns = [
 
     # Подтверждение email
     path('auth/verify-email/', auth_views.verify_email, name='verify-email'),
+
+    # Админ
+    path('admin/orders/<int:order_id>/', change_order_status, name='admin-change-order-status'),
+    path('admin/export/csv/', export_products_csv, name='admin-export-csv'),
 ]

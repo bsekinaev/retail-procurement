@@ -24,3 +24,15 @@ def send_order_confirmation(order_id):
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
     except Exception as e:
         pass
+
+
+@shared_task
+def send_order_status_notification(order_id, new_status):
+    from orders_app.models import Order
+    try:
+        order = Order.objects.get(id=order_id)
+        subject = f'Статус заказа №{order.id} изменён'
+        message = f'Ваш заказ переведён в статус "{new_status}"'
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
+    except Order.DoesNotExist:
+        pass
