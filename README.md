@@ -17,6 +17,8 @@ Backend‑приложение для автоматизации закупок 
 
 - [✨ Возможности](#-возможности)
 - [🏗️ Архитектура](#️-архитектура)
+- [🔄 Процесс заказа](#-процесс-заказа)
+- [🖥️ Интерфейс](#️-интерфейс)
 - [🧰 Технологический стек](#-технологический-стек)
 - [📦 Быстрый старт](#-быстрый-старт)
 - [📡 API Endpoints](#-api-endpoints)
@@ -36,14 +38,32 @@ Backend‑приложение для автоматизации закупок 
 - **Личный кабинет поставщика**: просмотр своих заказов, включение/отключение приёма заказов
 - **Импорт товаров** из YAML‑файла через management‑команду и асинхронную Celery‑задачу
 - **Email‑уведомления** о регистрации и подтверждении заказа (через Celery, backend – консоль)
+- **Администрирование**: изменение статуса заказа с уведомлением клиента, экспорт товаров в CSV
 - **Полная контейнеризация** Docker Compose (PostgreSQL, Redis, Celery worker, Django)
 - **Автоматическая документация API** – Swagger UI и ReDoc через `drf-spectacular`
+- **Фронтенд** на Bootstrap 5 (каталог, корзина, заказы, регистрация и логин)
 
 ---
 
 ## 🏗️ Архитектура
 <img src="doc/arch.png" alt="Архитектура" width="600"/> 
 
+---
+
+## 🔄 Процесс заказа
+
+<img src="doc/order.png" alt="Архитектура" width="600"/> 
+
+---
+
+## 🖥️ Интерфейс
+
+<!-- Добавить скриншот: страница входа (login.html) -->
+<img src="doc/login.png" alt="Вход" width="800"/>
+<img src="doc/register.png" alt="Вход" width="800"/> 
+<img src="doc/index.png" alt="Вход" width="800"/>
+<img src="doc/cart.png" alt="Вход" width="800"/>
+<img src="doc/orders.png" alt="Вход" width="800"/>
 
 ---
 
@@ -58,6 +78,7 @@ Backend‑приложение для автоматизации закупок 
 | **Контейнеризация** | Docker, Docker Compose |
 | **Тестирование** | pytest, factory-boy |
 | **Документация** | drf-spectacular (Swagger UI, ReDoc) |
+| **Фронтенд** | HTML5, CSS3, Bootstrap 5, JavaScript (fetch API) |
 
 ---
 
@@ -90,7 +111,8 @@ REDIS_PORT=6379
 docker-compose up --build -d
 ```
 
-Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).
+Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).  
+Фронтенд откроется автоматически на главной странице.
 
 ### 4. Импорт тестовых товаров
 ```bash
@@ -111,6 +133,7 @@ ReDoc: [http://localhost:8000/api/v1/redoc/](http://localhost:8000/api/v1/redoc/
 | `POST` | `/api/v1/auth/register/` | Регистрация покупателя/поставщика | Нет |
 | `POST` | `/api/v1/auth/login/` | Вход (получение JWT access/refresh) | Нет |
 | `POST` | `/api/v1/auth/token/refresh/` | Обновление access‑токена | Нет |
+| `GET` | `/api/v1/auth/verify-email/?token=` | Подтверждение email | Нет |
 
 ### 📦 Товары и каталог
 | Метод | Путь | Описание | Аутентификация |
@@ -173,11 +196,14 @@ curl -X POST http://localhost:8000/api/v1/cart/items/ \
 
 ## 🧪 Тестирование
 
-Тесты будут добавлены в ближайшее время. Для запуска:
+Для запуска тестов:
 
 ```bash
 docker-compose exec web pytest
 ```
+
+В проекте реализован интеграционный тест полного цикла покупки.  
+CI/CD (GitHub Actions) автоматически прогоняет тесты при каждом пуше в `main`.
 
 ---
 
@@ -187,12 +213,14 @@ docker-compose exec web pytest
 retail-procurement/
 ├── api/                   # Основные эндпоинты, Celery-задачи email
 ├── cart/                  # Модель корзины, сериализаторы, views
-├── doc/                   # Документация и схемы (архитектура)
+├── doc/                   # Документация и схемы (архитектура, скриншоты)
+├── frontend/              # Фронтенд на Bootstrap 
 ├── orders_app/            # Заказы, контакты, сериализаторы, views
 ├── orders/                # Настройки Django
 ├── products/              # Товары, категории, импорт, Celery-задачи
 ├── suppliers/             # Поставщики, views
 ├── users/                 # Кастомная модель User, сериализатор регистрации
+├── static/                # Статические файлы
 ├── celery_worker.py       # Конфигурация Celery
 ├── docker-compose.yml
 ├── Dockerfile
@@ -210,10 +238,13 @@ retail-procurement/
 - [x] Подключить Swagger‑документацию (`drf-spectacular`)
 - [x] Добавить эндпоинт подтверждения email (верификация)
 - [x] Админский эндпоинт смены статуса заказа с уведомлением клиента
-- [x] Экспорт товаров в CSV/YAML
+- [x] Экспорт товаров в CSV
 - [x] GitHub Actions для CI
-- [x] Тесты (pytest + factory-boy)
-- [ ] Фронтенд на Bootstrap
+- [x] Фронтенд на Bootstrap
+- [ ] Тесты для всех модулей (auth, cart, orders, products)
+- [ ] Кэширование каталога через Redis
+- [ ] Вынос логики корзины в сервисный слой
+- [ ] Мониторинг и логирование
 
 ---
 
@@ -225,5 +256,3 @@ Python Backend Developer
 - 📧 [bsekinaev@ya.ru](bsekinaev@ya.ru)
 - 📢 Telegram: [@bsekinaev](https://t.me/bsekinaev)  
 - ⭐️ GitHub: [bsekinaev](https://github.com/bsekinaev)
-
-
