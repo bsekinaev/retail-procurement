@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
 
 class User(AbstractUser):
     class UserType(models.TextChoices):
@@ -16,7 +18,14 @@ class User(AbstractUser):
     )
     is_verified = models.BooleanField(default=False, verbose_name='Email подтверждён')
     verification_token = models.CharField(max_length=64, blank=True, null=True)
-    social_avatar = models.ImageField(blank=True, null=True)
+    avatar = ProcessedImageField(
+        upload_to='avatars',
+        processors=[ResizeToFill(200, 200)],
+        format='JPEG',
+        options={'quality': 80},
+        blank=True,
+        null=True
+    )
 
 
     USERNAME_FIELD = 'email'
