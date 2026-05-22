@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import auth_views
+from . import auth_views, views
 from products.views import ProductListView, ProductDetailView
 from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDeleteView
 from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
@@ -41,4 +41,7 @@ urlpatterns = [
     # Админ
     path('admin/orders/<int:order_id>/', change_order_status, name='admin-change-order-status'),
     path('admin/export/csv/', export_products_csv, name='admin-export-csv'),
+
+    # Glitchtip
+    path('crash/', views.crash_test),
 ]
