@@ -10,6 +10,8 @@ Backend‑приложение для автоматизации закупок 
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis)](https://redis.io)
 [![Docker](https://img.shields.io/badge/Docker-✓-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![GitHub Actions](https://img.shields.io/badge/CI-CD-2088FF?style=for-the-badge&logo=githubactions)](.github/workflows/tests.yml)
+
 ---
 
 ## 📑 Содержание
@@ -27,23 +29,25 @@ Backend‑приложение для автоматизации закупок 
 - [🚧 Дальнейшее развитие](#-дальнейшее-развитие)
 - [👤 Автор](#-автор)
 
-
 ---
 
 ## ✨ Возможности
 
 - **Регистрация и авторизация** по JWT (Simple JWT)
-- **Вход через Google и GitHub** (OAuth 2.0)
-- **Каталог товаров** с фильтрацией по категории, поставщику, цене и поиском
-- **Корзина** с добавлением, изменением количества и удалением товаров
-- **Оформление заказа** с адресом доставки
+- **Вход через Google и GitHub** (OAuth 2.0) с автоматической загрузкой аватара через Celery
+- **Каталог товаров** с фильтрацией по категории, поставщику, цене и поиском (кэширование Redis)
+- **Корзина** с добавлением, изменением количества и удалением товаров (транзакционная безопасность)
+- **Оформление заказа** с проверкой остатков и атомарным списанием (`select_for_update`)
 - **Личный кабинет поставщика**: просмотр своих заказов, включение/отключение приёма заказов
 - **Импорт товаров** из YAML‑файла через management‑команду и асинхронную Celery‑задачу
-- **Email‑уведомления** о регистрации и подтверждении заказа (через Celery, backend – консоль)
+- **Email‑уведомления** о регистрации, подтверждении заказа и смене статуса (Celery)
 - **Администрирование**: изменение статуса заказа с уведомлением клиента, экспорт товаров в CSV
+- **Мониторинг ошибок** через Glitchtip (аналог Sentry)
+- **Асинхронная обработка изображений** – загрузка аватаров и генерация миниатюр (django‑imagekit + Celery)
 - **Полная контейнеризация** Docker Compose (PostgreSQL, Redis, Celery worker, Django)
 - **Автоматическая документация API** – Swagger UI и ReDoc через `drf-spectacular`
 - **Фронтенд** на Bootstrap 5 (каталог, корзина, заказы, регистрация и логин)
+
 ---
 
 ## 🏗️ Архитектура
@@ -53,18 +57,17 @@ Backend‑приложение для автоматизации закупок 
 
 ## 🔄 Процесс заказа
 
-<img src="doc/order.png" alt="Архитектура" width="600"/> 
+<img src="doc/order.png" alt="Процесс заказа" width="600"/> 
 
 ---
 
 ## 🖥️ Интерфейс
 
-<!-- Добавить скриншот: страница входа (login.html) -->
 <img src="doc/login.png" alt="Вход" width="800"/>
-<img src="doc/register.png" alt="Вход" width="800"/> 
-<img src="doc/index.png" alt="Вход" width="800"/>
-<img src="doc/cart.png" alt="Вход" width="800"/>
-<img src="doc/orders.png" alt="Вход" width="800"/>
+<img src="doc/register.png" alt="Регистрация" width="800"/> 
+<img src="doc/index.png" alt="Каталог" width="800"/>
+<img src="doc/cart.png" alt="Корзина" width="800"/>
+<img src="doc/orders.png" alt="Заказы" width="800"/>
 
 ---
 
@@ -78,6 +81,9 @@ Backend‑приложение для автоматизации закупок 
 | **Аутентификация** | Simple JWT, Google OAuth 2.0, GitHub OAuth |
 | **Контейнеризация** | Docker, Docker Compose |
 | **Тестирование** | pytest, factory-boy |
+| **CI/CD** | GitHub Actions |
+| **Мониторинг** | Glitchtip (Sentry‑совместимый SDK) |
+| **Обработка изображений** | django‑imagekit, Pillow, Celery |
 | **Документация** | drf-spectacular (Swagger UI, ReDoc) |
 | **Фронтенд** | HTML5, CSS3, Bootstrap 5, JavaScript (fetch API) |
 
@@ -92,32 +98,14 @@ cd retail-procurement
 ```
 
 ### 2. Настройка окружения
-Создайте файл `.env` в корне проекта по примеру `.env.example`:
-
-```
-SECRET_KEY=ваш_секретный_ключ
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-DB_NAME=orders_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-REDIS_HOST=redis
-REDIS_PORT=6379
-GOOGLE_CLIENT_ID=ваш-google-client-id
-GOOGLE_CLIENT_SECRET=ваш-google-client-secret
-GITHUB_CLIENT_ID=ваш-github-client-id
-GITHUB_CLIENT_SECRET=ваш-github-client-secret
-```
+Создайте файл `.env` в корне проекта по примеру `.env.example` и заполните реальными ключами.
 
 ### 3. Запуск с Docker
 ```bash
 docker-compose up --build -d
 ```
 
-Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).  
-Фронтенд откроется автоматически на главной странице.
+Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).
 
 ### 4. Импорт тестовых товаров
 ```bash
@@ -139,6 +127,7 @@ ReDoc: [http://localhost:8000/api/v1/redoc/](http://localhost:8000/api/v1/redoc/
 | `POST` | `/api/v1/auth/login/` | Вход (получение JWT access/refresh) | Нет |
 | `POST` | `/api/v1/auth/token/refresh/` | Обновление access‑токена | Нет |
 | `GET` | `/api/v1/auth/verify-email/?token=` | Подтверждение email | Нет |
+| `GET` | `/api/v1/user/profile/` | Профиль текущего пользователя | Да |
 
 ### 📦 Товары и каталог
 | Метод | Путь | Описание | Аутентификация |
@@ -174,48 +163,31 @@ ReDoc: [http://localhost:8000/api/v1/redoc/](http://localhost:8000/api/v1/redoc/
 | `PATCH` | `/api/v1/admin/orders/{id}/` | Изменить статус заказа | Да (админ) |
 | `GET` | `/api/v1/admin/export/csv/` | Экспорт товаров в CSV | Да (админ) |
 
-
-**Примеры запросов:**
-```bash
-# Регистрация
-curl -X POST http://localhost:8000/api/v1/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"testpass123","user_type":"client"}'
-
-# Вход
-curl -X POST http://localhost:8000/api/v1/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"testpass123"}'
-
-# Список товаров (требуется access‑токен)
-curl -H "Authorization: Bearer <access_token>" http://localhost:8000/api/v1/products/
-
-# Добавление в корзину
-curl -X POST http://localhost:8000/api/v1/cart/items/ \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"product_id":1, "quantity":2}'
-```
 ---
+
 ## 🔐 Аутентификация через соцсети
-Проект поддерживает вход через Google и GitHub (OAuth 2.0).
+
+Проект поддерживает вход через **Google** и **GitHub** (OAuth 2.0).  
+После авторизации автоматически запускается Celery‑задача для загрузки аватара пользователя.
 
 **Как настроить**
+
 1. Получите Client ID и Client Secret для вашего приложения:
-- **Google**: Google Cloud Console
-- Authorized redirect URI: http://localhost:8000/auth/social/complete/google-oauth2/
-- **GitHub**: GitHub Developer Settings 
-- Authorization callback URL: http://localhost:8000/auth/social/complete/github/
-2. Добавьте полученные ключи в .env:
+   - **Google**: [Google Cloud Console](https://console.cloud.google.com/)
+     - Authorized redirect URI: `http://localhost:8000/auth/social/complete/google-oauth2/`
+   - **GitHub**: [GitHub Developer Settings](https://github.com/settings/developers)
+     - Authorization callback URL: `http://localhost:8000/auth/social/complete/github/`
 
+2. Добавьте полученные ключи в `.env`:
 
-```text
-GOOGLE_CLIENT_ID=ваш-google-client-id
-GOOGLE_CLIENT_SECRET=ваш-google-client-secret
-GITHUB_CLIENT_ID=ваш-github-client-id
-GITHUB_CLIENT_SECRET=ваш-github-client-secret
-```
-3. Перезапустите контейнеры: docker-compose up --build -d
+   ```text
+   GOOGLE_CLIENT_ID=ваш-google-client-id
+   GOOGLE_CLIENT_SECRET=ваш-google-client-secret
+   GITHUB_CLIENT_ID=ваш-github-client-id
+   GITHUB_CLIENT_SECRET=ваш-github-client-secret
+   ```
+
+3. Перезапустите контейнеры: `docker-compose up --build -d`
 
 4. На страницах входа и регистрации появятся кнопки «Войти через Google» и «Войти через GitHub».
 
@@ -223,17 +195,14 @@ GITHUB_CLIENT_SECRET=ваш-github-client-secret
 
 ## 🧪 Тестирование
 
-Для запуска тестов:
-
 ```bash
 docker-compose exec web pytest
 ```
 
-В проекте реализован интеграционный тест полного цикла покупки.  
+В проекте реализованы тесты для auth (включая throttling), cart, orders, products и интеграционный тест полного цикла покупки.  
 CI/CD (GitHub Actions) автоматически прогоняет тесты при каждом пуше в `main`.
 
 ---
-
 
 ## 📁 Структура проекта
 
@@ -271,14 +240,15 @@ retail-procurement/
 - [x] Фронтенд на Bootstrap
 - [x] Сервисный слой для корзины и заказов
 - [x] Тесты (auth, cart, orders, products)
-- [X] Кэширование каталога через Redis
-- [X] Мониторинг и логирование
-- [ ] Тюнинг админки (Django Baton)
+- [x] Кэширование каталога через Redis
+- [x] Мониторинг ошибок (Glitchtip)
+- [x] Асинхронная загрузка аватаров (Celery + django‑imagekit)
+- [x] Полноценный соц-вход с выдачей JWT и редиректом на каталог
+- [ ] История статусов заказа
+- [ ] Система скидок/промокодов
+- [ ] Расширенное логирование и аудит
 
-
-
-> **Примечание по безопасности:** В учебных целях JWT-токен хранится в `localStorage`.
-> 
+> **Примечание по безопасности:** В учебных целях JWT-токен хранится в `localStorage`.  
 > Для production‑среды рекомендуется использовать HttpOnly cookies для защиты от XSS.
 
 ---
@@ -291,10 +261,3 @@ Python Backend Developer
 - 📧 [bsekinaev@ya.ru](bsekinaev@ya.ru)
 - 📢 Telegram: [@bsekinaev](https://t.me/bsekinaev)  
 - ⭐️ GitHub: [bsekinaev](https://github.com/bsekinaev)
-
-
-
-
-
-
-
