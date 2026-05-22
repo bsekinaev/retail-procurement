@@ -3,8 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
-from products.models import Product
-from django.shortcuts import get_object_or_404
+from .services import CartService
 
 class CartView(generics.RetrieveAPIView):
     # Просмотр корзины текущего пользователя
@@ -24,21 +23,13 @@ class CartItemAddView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         product_id = request.data.get('product_id')
         quantity = int(request.data.get('quantity', 1))
-        if quantity < 1:
-            return Response({'Ошибка': 'Количество должно быть положительным'}, status=status.HTTP_400_BAD_REQUEST)
-        product = get_object_or_404(Product, id=product_id, is_available=True)
-
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            product=product,
-            defaults={'quantity': quantity}
-        )
-        if not created:
-            item.quantity += quantity
-            item.save()
-
-        serializer = self.get_serializer(item)
+        # Вызываем сервис
+        result = CartService.add_item(request.user, product_id, quantity)
+        # Если сервис вернул Response (ошибка), сразу возвращаем её
+        if isinstance(result, Response):
+            return result
+        # Иначе сериализуем созданный/обновлённый item
+        serializer = self.get_serializer(result)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CartItemUpdateView(generics.UpdateAPIView):
@@ -50,6 +41,15 @@ class CartItemUpdateView(generics.UpdateAPIView):
     def get_queryset(self):
         return CartItem.objects.filter(cart__user=self.request.user)
 
+    def patch(self, request, *args, **kwargs):
+        item_id = kwargs['pk']
+        quantity = int(request.data.get('quantity', 1))
+        result = CartService.update_item(request.user, item_id, quantity)
+        if isinstance(result, Response):
+            return result
+        serializer = self.get_serializer(result)
+        return Response(serializer.data)
+
 class CartItemDeleteView(generics.DestroyAPIView):
     # Удаление позиции из корзины
     permission_classes = [IsAuthenticated]
@@ -57,3 +57,6 @@ class CartItemDeleteView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return CartItem.objects.filter(cart__user=self.request.user)
+
+    def perform_destroy(self, instance):
+        CartService.remove_item(self.request.user, instance.id)
