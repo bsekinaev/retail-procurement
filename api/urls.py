@@ -1,5 +1,5 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from . import auth_views
 from products.views import ProductListView, ProductDetailView
 from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDeleteView
@@ -13,6 +13,7 @@ urlpatterns = [
     path('auth/register/', auth_views.register, name='register'),
     path('auth/login/', LoginView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 
     # Товары
     path('products/', ProductListView.as_view(), name='product-list'),

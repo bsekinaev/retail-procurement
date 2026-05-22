@@ -16,6 +16,8 @@ class User(AbstractUser):
     )
     is_verified = models.BooleanField(default=False, verbose_name='Email подтверждён')
     verification_token = models.CharField(max_length=64, blank=True, null=True)
+    social_avatar = models.ImageField(blank=True, null=True)
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

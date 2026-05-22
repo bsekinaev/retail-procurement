@@ -83,3 +83,9 @@ def test_login_throttle():
     # 6-й запрос должен вернуть 429
     resp = client.post(url, data)
     assert resp.status_code == 429
+
+@pytest.mark.django_db
+def test_social_auth_redirect():
+    client = APIClient()
+    resp = client.get('/auth/social/login/google-oauth2/')
+    assert resp.status_code == 302

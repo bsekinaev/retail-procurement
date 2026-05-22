@@ -10,7 +10,6 @@ Backend‑приложение для автоматизации закупок 
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis)](https://redis.io)
 [![Docker](https://img.shields.io/badge/Docker-✓-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
-
 ---
 
 ## 📑 Содержание
@@ -22,16 +21,19 @@ Backend‑приложение для автоматизации закупок 
 - [🧰 Технологический стек](#-технологический-стек)
 - [📦 Быстрый старт](#-быстрый-старт)
 - [📡 API Endpoints](#-api-endpoints)
+- [🔐 Аутентификация через соцсети](#-аутентификация-через-соцсети)
 - [🧪 Тестирование](#-тестирование)
 - [📁 Структура проекта](#-структура-проекта)
 - [🚧 Дальнейшее развитие](#-дальнейшее-развитие)
 - [👤 Автор](#-автор)
+
 
 ---
 
 ## ✨ Возможности
 
 - **Регистрация и авторизация** по JWT (Simple JWT)
+- **Вход через Google и GitHub** (OAuth 2.0)
 - **Каталог товаров** с фильтрацией по категории, поставщику, цене и поиском
 - **Корзина** с добавлением, изменением количества и удалением товаров
 - **Оформление заказа** с адресом доставки
@@ -42,7 +44,6 @@ Backend‑приложение для автоматизации закупок 
 - **Полная контейнеризация** Docker Compose (PostgreSQL, Redis, Celery worker, Django)
 - **Автоматическая документация API** – Swagger UI и ReDoc через `drf-spectacular`
 - **Фронтенд** на Bootstrap 5 (каталог, корзина, заказы, регистрация и логин)
-
 ---
 
 ## 🏗️ Архитектура
@@ -74,7 +75,7 @@ Backend‑приложение для автоматизации закупок 
 | **Backend** | Python 3.10, Django 4.2, Django REST Framework |
 | **Базы данных** | PostgreSQL, Redis |
 | **Асинхронность** | Celery, Redis (брокер) |
-| **Аутентификация** | Simple JWT |
+| **Аутентификация** | Simple JWT, Google OAuth 2.0, GitHub OAuth |
 | **Контейнеризация** | Docker, Docker Compose |
 | **Тестирование** | pytest, factory-boy |
 | **Документация** | drf-spectacular (Swagger UI, ReDoc) |
@@ -104,6 +105,10 @@ DB_HOST=db
 DB_PORT=5432
 REDIS_HOST=redis
 REDIS_PORT=6379
+GOOGLE_CLIENT_ID=ваш-google-client-id
+GOOGLE_CLIENT_SECRET=ваш-google-client-secret
+GITHUB_CLIENT_ID=ваш-github-client-id
+GITHUB_CLIENT_SECRET=ваш-github-client-secret
 ```
 
 ### 3. Запуск с Docker
@@ -191,6 +196,28 @@ curl -X POST http://localhost:8000/api/v1/cart/items/ \
   -H "Content-Type: application/json" \
   -d '{"product_id":1, "quantity":2}'
 ```
+---
+## 🔐 Аутентификация через соцсети
+Проект поддерживает вход через Google и GitHub (OAuth 2.0).
+
+**Как настроить**
+1. Получите Client ID и Client Secret для вашего приложения:
+- **Google**: Google Cloud Console
+- Authorized redirect URI: http://localhost:8000/auth/social/complete/google-oauth2/
+- **GitHub**: GitHub Developer Settings 
+- Authorization callback URL: http://localhost:8000/auth/social/complete/github/
+2. Добавьте полученные ключи в .env:
+
+
+```text
+GOOGLE_CLIENT_ID=ваш-google-client-id
+GOOGLE_CLIENT_SECRET=ваш-google-client-secret
+GITHUB_CLIENT_ID=ваш-github-client-id
+GITHUB_CLIENT_SECRET=ваш-github-client-secret
+```
+3. Перезапустите контейнеры: docker-compose up --build -d
+
+4. На страницах входа и регистрации появятся кнопки «Войти через Google» и «Войти через GitHub».
 
 ---
 
@@ -206,6 +233,7 @@ docker-compose exec web pytest
 CI/CD (GitHub Actions) автоматически прогоняет тесты при каждом пуше в `main`.
 
 ---
+
 
 ## 📁 Структура проекта
 
@@ -243,8 +271,11 @@ retail-procurement/
 - [x] Фронтенд на Bootstrap
 - [x] Сервисный слой для корзины и заказов
 - [x] Тесты (auth, cart, orders, products)
-- [ ] Кэширование каталога через Redis
-- [ ] Мониторинг и логирование
+- [X] Кэширование каталога через Redis
+- [X] Мониторинг и логирование
+- [ ] Тюнинг админки (Django Baton)
+
+
 
 > **Примечание по безопасности:** В учебных целях JWT-токен хранится в `localStorage`.
 > 
@@ -260,3 +291,10 @@ Python Backend Developer
 - 📧 [bsekinaev@ya.ru](bsekinaev@ya.ru)
 - 📢 Telegram: [@bsekinaev](https://t.me/bsekinaev)  
 - ⭐️ GitHub: [bsekinaev](https://github.com/bsekinaev)
+
+
+
+
+
+
+
