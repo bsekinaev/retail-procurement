@@ -9,14 +9,18 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">Retail Procurement</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="index.html">Каталог</a>
-                <a class="nav-link active" href="cart.html">Корзина</a>
-                <a class="nav-link" href="orders.html">Заказы</a>
-            </div>
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Retail Procurement</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="index.html">Каталог</a>
+            <a class="nav-link" href="cart.html">Корзина</a>
+            <a class="nav-link" href="orders.html">Заказы</a>
         </div>
+        <div class="navbar-nav ms-auto">
+            <span id="user-avatar" class="navbar-text"></span>
+            <a class="nav-link" href="#" onclick="logout()">Выход</a>
+        </div>
+    </div>
     </nav>
 
     <div class="container mt-4">
@@ -127,5 +131,27 @@
             loadCart();
         }
     </script>
+    <script>
+    async function loadProfile() {
+        try {
+            const data = await apiGet('/user/profile/');
+            if (data.avatar_url) {
+                document.getElementById('user-avatar').innerHTML =
+                    `<img src="${data.avatar_url}" alt="Аватар" width="30" height="30" class="rounded-circle me-2">`;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function logout() {
+        clearToken();
+        window.location.href = 'login.html';
+    }
+
+    if (AUTH_TOKEN) {
+        loadProfile();
+    }
+</script>
 </body>
 </html>

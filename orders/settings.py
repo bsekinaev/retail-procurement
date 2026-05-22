@@ -126,6 +126,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 SOCIAL_AUTH_GITHUB_KEY = os.getenv('GITHUB_CLIENT_ID')
 SOCIAL_AUTH_GITHUB_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/social-callback.html'
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -144,6 +145,7 @@ SOCIAL_AUTH_PIPELINE = (
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@retail-procurement.ru'
 
+FRONTEND_URL = 'http://localhost:8000'
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/

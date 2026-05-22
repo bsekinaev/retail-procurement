@@ -32,3 +32,15 @@ class RegisterSerializer(serializers.ModelSerializer):
             logger = logging.getLogger(__name__)
             logger.error(f"Не удалось отправить задачу Celery: {e}")
         return user
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'user_type', 'avatar_url')
+
+    def get_avatar_url(self, obj):
+        if obj.avatar:
+            return obj.avatar.url
+        return None

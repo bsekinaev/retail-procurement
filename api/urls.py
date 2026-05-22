@@ -6,7 +6,7 @@ from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDe
 from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
 from suppliers.views import SupplierOrdersView, SupplierStatusView, SupplierImportView
 from api.admin_views import change_order_status, export_products_csv
-from .auth_views import LoginView
+from .auth_views import LoginView, social_token_view
 
 urlpatterns = [
     # Авторизация
@@ -14,6 +14,9 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
+    # Профиль
+    path('user/profile/', auth_views.user_profile, name='user-profile'),
+    path('auth/social/token/', social_token_view, name='social-token'),
 
     # Товары
     path('products/', ProductListView.as_view(), name='product-list'),

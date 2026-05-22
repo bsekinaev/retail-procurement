@@ -1,11 +1,16 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from users.serializers import RegisterSerializer
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from users.serializers import RegisterSerializer,UserProfileSerializer
 from users.models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.throttling import ScopedRateThrottle
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+
 
 class LoginView(TokenObtainPairView):
     throttle_classes = [ScopedRateThrottle]
@@ -37,3 +42,19 @@ def verify_email(request):
     user.verification_token = None
     user.save()
     return Response({'Сообщение':'Email успешно подтвержден'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    serializer = UserProfileSerializer(request.user)
+    return Response(serializer.data)
+
+@login_required
+def social_token_view(request):
+    # Отдаёт JWT access/refresh для аутентифицированного через соцсеть пользователя
+    user = request.user
+    refresh = RefreshToken.for_user(user)
+    return JsonResponse({
+        'access': str(refresh.access_token),
+        'refresh': str(refresh)
+    })
