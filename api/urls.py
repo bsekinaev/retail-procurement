@@ -6,11 +6,12 @@ from cart.views import CartView, CartItemAddView, CartItemUpdateView, CartItemDe
 from orders_app.views import OrderListView, OrderDetailView, OrderConfirmView
 from suppliers.views import SupplierOrdersView, SupplierStatusView, SupplierImportView
 from api.admin_views import change_order_status, export_products_csv
+from .auth_views import LoginView
 
 urlpatterns = [
     # Авторизация
     path('auth/register/', auth_views.register, name='register'),
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/login/', LoginView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Товары

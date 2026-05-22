@@ -1,6 +1,8 @@
 from rest_framework import generics, filters
 from .models import Product
 from .serializers import ProductListSerializer,ProductDetailSerializer
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 
 class ProductListView(generics.ListAPIView):
@@ -13,6 +15,10 @@ class ProductListView(generics.ListAPIView):
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'name', 'created_at']
     ordering = ['name']
+
+    @method_decorator(cache_page(60 * 5))  # кэш на 5 минут
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     # Допольнительная фильтрация
     def get_queryset(self):

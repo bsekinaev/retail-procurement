@@ -4,6 +4,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from users.serializers import RegisterSerializer
 from users.models import User
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.throttling import ScopedRateThrottle
+
+class LoginView(TokenObtainPairView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

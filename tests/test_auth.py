@@ -1,7 +1,9 @@
 import pytest
+from django.test import override_settings
 from rest_framework.test import APIClient
 from rest_framework import status
 from users.models import User
+from django.core.cache import cache
 
 @pytest.mark.django_db
 def test_register():
@@ -63,3 +65,21 @@ def test_verify_email():
     user.refresh_from_db()
     assert user.is_verified
     assert user.is_active
+
+@pytest.mark.django_db
+@override_settings(CACHES={
+    'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}
+})
+def test_login_throttle():
+    from django.core.cache import cache
+    cache.clear()
+    client = APIClient()
+    url = '/api/v1/auth/login/'
+    data = {'email': 'throttle@example.com', 'password': 'wrongpass'}
+    # 5 запросов (лимит scope 'login')
+    for _ in range(5):
+        resp = client.post(url, data)
+        assert resp.status_code == 401
+    # 6-й запрос должен вернуть 429
+    resp = client.post(url, data)
+    assert resp.status_code == 429

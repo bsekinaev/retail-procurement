@@ -146,7 +146,17 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/min',
+        'user': '100/min',
+        'login': '5/min',
+    },
 }
+
 
 # Spectacular
 SPECTACULAR_SETTINGS = {
@@ -156,6 +166,13 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
+# Кэширование через Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f'redis://{REDIS_HOST}:{REDIS_PORT}/1',
+    }
+}
 # Логирование
 LOGGING = {
     'version': 1,

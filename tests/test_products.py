@@ -3,9 +3,11 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from users.factories import UserFactory, ProductFactory
 from suppliers.models import Supplier
+from django.core.cache import cache
 
 @pytest.mark.django_db
 def test_product_list():
+    cache.clear()
     supplier_user = UserFactory(user_type='supplier')
     supplier = Supplier.objects.create(user=supplier_user, company_name='Test Supplier')
     ProductFactory.create_batch(3, supplier=supplier)
