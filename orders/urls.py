@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
+    path('baton/', include('baton.urls')),
     path('admin/', admin.site.urls),
     path('api/v1/', include('api.urls')),
     path('auth/social/', include('social_django.urls', namespace='social')),
