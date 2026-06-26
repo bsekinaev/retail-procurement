@@ -4,6 +4,9 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from users.models import User
 from django.core.cache import cache
+from urllib.parse import parse_qs, urlparse
+from django.test import Client, override_settings
+from django.urls import reverse
 
 @pytest.mark.django_db
 def test_register():
@@ -85,7 +88,34 @@ def test_login_throttle():
     assert resp.status_code == 429
 
 @pytest.mark.django_db
-def test_social_auth_redirect():
-    client = APIClient()
-    resp = client.get('/auth/social/login/google-oauth2/')
-    assert resp.status_code == 302
+def test_social_auth_login_rejects_get():
+    """OAuth login endpoint должен запрещать GET-запросы."""
+    client = Client()
+    url = reverse("social:begin", args=["google-oauth2"])
+
+    response = client.get(url)
+
+    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+
+@pytest.mark.django_db
+@override_settings(
+    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="test-google-client-id",
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="test-google-client-secret",
+)
+def test_social_auth_login_redirects_on_post():
+    """POST-запрос должен перенаправлять пользователя на Google OAuth."""
+    client = Client()
+    url = reverse("social:begin", args=["google-oauth2"])
+
+    response = client.post(url)
+
+    assert response.status_code == status.HTTP_302_FOUND
+
+    redirect_url = response["Location"]
+    parsed_url = urlparse(redirect_url)
+    query_params = parse_qs(parsed_url.query)
+
+    assert parsed_url.scheme == "https"
+    assert parsed_url.netloc == "accounts.google.com"
+    assert query_params["client_id"] == ["test-google-client-id"]
