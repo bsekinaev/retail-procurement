@@ -113,6 +113,10 @@ docker compose exec web python manage.py import_products shop1.yaml
 - Swagger UI: `http://localhost:8000/api/v1/docs/`
 - ReDoc: `http://localhost:8000/api/v1/redoc/`
 
+## Демонстрация для технического интервью
+
+[Сценарий покупки: регистрация → подтверждение email → JWT → корзина → заказ](docs/PORTFOLIO_SCENARIO.md). Все маршруты и ожидаемые статусы взяты из интеграционного теста `tests/test_integration.py`. Пример использует тестовую PostgreSQL и тестовые данные; это **не запись реального production-сеанса**.
+
 ## Основные API-сценарии
 
 ### Пользователи
