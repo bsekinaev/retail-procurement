@@ -15,7 +15,6 @@ from api.tasks import send_order_confirmation
 from cart.models import CartItem
 from cart.services import CartService
 from orders_app.models import Contact, Order
-from products.models import Product
 from suppliers.models import Supplier
 from users.factories import ProductFactory, UserFactory
 
