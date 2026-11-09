@@ -110,10 +110,25 @@ def test_confirmation_worker_sends_to_order_owner():
     )
     order = Order.objects.create(user=buyer, contact=contact)
 
-    with patch("api.tasks.send_mail") as send:
+    with patch("api.tasks.send_mail", return_value=1) as send:
         send_order_confirmation.run(order.id)
 
     send.assert_called_once()
     args, _kwargs = send.call_args
     assert args[0] == f"Заказ №{order.id} подтвержден"
     assert args[3] == [buyer.email]
+
+
+@pytest.mark.django_db
+def test_confirmation_worker_rejects_zero_mail_result():
+    buyer = UserFactory()
+    contact = Contact.objects.create(
+        user=buyer, address="Тестовая, 1", phone="+79990000000"
+    )
+    order = Order.objects.create(user=buyer, contact=contact)
+
+    with patch("api.tasks.send_mail", return_value=0) as send:
+        with pytest.raises(RuntimeError, match="order_confirmation_not_sent"):
+            send_order_confirmation.run(order.id)
+
+    send.assert_called_once()
