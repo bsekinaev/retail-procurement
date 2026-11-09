@@ -18,14 +18,21 @@ def send_verification_email(user_id):
 
 @shared_task
 def send_order_confirmation(order_id):
+    """Доставить уведомление; при ошибке оставить задачу failed в Celery.
+
+    Отправка письма не подтверждает и не отменяет уже созданный заказ.
+    Бесшумно завершать задачу при ошибке SMTP или отсутствующем заказе нельзя.
+    """
     from orders_app.models import Order
-    try:
-        order = Order.objects.get(id=order_id)
-        subject = f'Заказ №{order.id} подтвержден'
-        message = f'Ваш заказ на сумму {order.total_price} руб принят.'
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
-    except Exception as e:
-        pass
+
+    order = Order.objects.get(id=order_id)
+    subject = f'Заказ №{order.id} подтвержден'
+    message = f'Ваш заказ на сумму {order.total_price} руб принят.'
+    sent = send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
+    if sent != 1:
+        # Django email backends can return 0 without raising an exception.
+        # Mark the Celery task as failed instead of reporting a false success.
+        raise RuntimeError("order_confirmation_not_sent")
 
 
 @shared_task
