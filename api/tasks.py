@@ -28,7 +28,11 @@ def send_order_confirmation(order_id):
     order = Order.objects.get(id=order_id)
     subject = f'Заказ №{order.id} подтвержден'
     message = f'Ваш заказ на сумму {order.total_price} руб принят.'
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
+    sent = send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.user.email])
+    if sent != 1:
+        # Django email backends can return 0 without raising an exception.
+        # Mark the Celery task as failed instead of reporting a false success.
+        raise RuntimeError("order_confirmation_not_sent")
 
 
 @shared_task
